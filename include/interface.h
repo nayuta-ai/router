@@ -3,8 +3,15 @@
 
 #include <cstdint>
 
-#define IGNORE_INTERFACES {"lo", "bond0", "dummy0", "tunl0", "sit0"}
+#include "net.h"
+
+#define IGNORE_INTERFACES \
+  { "lo", "bond0", "dummy0", "tunl0", "sit0" }
 
 bool is_ignore_interface(const char *ifname);
 
-#endif //INTERFACE_H
+net_device *get_net_device_by_name(const char *name);
+
+void configure();
+
+#endif  // INTERFACE_H
