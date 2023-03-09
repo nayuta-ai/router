@@ -21,6 +21,12 @@ struct arp_table_entry {
   arp_table_entry *next;
 };
 
+/**
+ * ARP Table
+ * Keep tables in global variables
+ */
+extern arp_table_entry arp_table[ARP_TABLE_SIZE];
+
 void add_arp_table_entry(net_device *dev, uint8_t *mac_addr, uint32_t ip_addr);
 
 arp_table_entry *search_arp_table_entry(uint32_t ip_addr);
