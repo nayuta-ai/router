@@ -9,10 +9,6 @@
 #include "../include/net.h"
 #include "../include/utils.h"
 
-/**
- * ARP Table
- * Keep tables in global variables
- */
 arp_table_entry arp_table[ARP_TABLE_SIZE];
 
 /**
