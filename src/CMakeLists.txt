@@ -9,6 +9,7 @@ add_library(net STATIC
   utils.cpp
   config.cpp
   ip.cpp
+  icmp.cpp
   arp.cpp
   ethernet.cpp
 )
