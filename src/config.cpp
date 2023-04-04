@@ -1,9 +1,9 @@
-#include "../include/config.h"
+#include "config.h"
 
-#include "../include/ip.h"
-#include "../include/log.h"
-#include "../include/net.h"
-#include "../include/utils.h"
+#include "ip.h"
+#include "log.h"
+#include "net.h"
+#include "utils.h"
 
 /**
  * Set IP address for device

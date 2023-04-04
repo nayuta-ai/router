@@ -1,12 +1,12 @@
-#include "../include/ip.h"
+#include "ip.h"
 
-#include "../include/arp.h"
-#include "../include/ethernet.h"
-#include "../include/icmp.h"
-#include "../include/log.h"
-#include "../include/my_buf.h"
-#include "../include/net.h"
-#include "../include/utils.h"
+#include "arp.h"
+#include "ethernet.h"
+#include "icmp.h"
+#include "log.h"
+#include "my_buf.h"
+#include "net.h"
+#include "utils.h"
 
 /**
  * Compare if the subnet contains IP addresses
@@ -30,19 +30,14 @@ void ip_input_to_ours(net_device *input_dev, ip_header *ip_packet, size_t len) {
   // Transition to upper protocol processing
   switch (ip_packet->protocol) {
     case IP_PROTOCOL_NUM_ICMP:
-      return icmp_input(
-              ntohl(ip_packet->src_addr),
-              ntohl(ip_packet->dest_addr),
-              ((uint8_t *) ip_packet) + IP_HEADER_SIZE,
-              len - IP_HEADER_SIZE
-      );
+      return icmp_input(ntohl(ip_packet->src_addr), ntohl(ip_packet->dest_addr),
+                        ((uint8_t *)ip_packet) + IP_HEADER_SIZE,
+                        len - IP_HEADER_SIZE);
 
     case IP_PROTOCOL_NUM_UDP:
       send_icmp_destination_unreachable(
-              ntohl(ip_packet->src_addr),
-              input_dev->ip_dev->address,
-              ICMP_DESTINATION_UNREACHABLE_CODE_PORT_UNREACHABLE,
-              ip_packet, len);
+          ntohl(ip_packet->src_addr), input_dev->ip_dev->address,
+          ICMP_DESTINATION_UNREACHABLE_CODE_PORT_UNREACHABLE, ip_packet, len);
       return;
     case IP_PROTOCOL_NUM_TCP:
       return;
@@ -98,7 +93,6 @@ void ip_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
 
   // Find out if the router has the destination IP address.
   for (net_device *dev = net_dev_list; dev; dev = dev->next) {
-    printf("%d", dev->ip_dev->address);
     if (dev->ip_dev != nullptr and
         dev->ip_dev->address != IP_ADDRESS(0, 0, 0, 0)) {
       // Processing when the destination IP address is an IP address owned by

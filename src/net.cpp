@@ -1,4 +1,4 @@
-#include "../include/net.h"
+#include "net.h"
 
 /**
  * Top of net_device chained list

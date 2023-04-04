@@ -1,11 +1,11 @@
 
-#include "../include/ethernet.h"
+#include "ethernet.h"
 
-#include "../include/arp.h"
-#include "../include/ip.h"
-#include "../include/log.h"
-#include "../include/my_buf.h"
-#include "../include/utils.h"
+#include "arp.h"
+#include "ip.h"
+#include "log.h"
+#include "my_buf.h"
+#include "utils.h"
 
 /**
  * Receive process for Ethernet

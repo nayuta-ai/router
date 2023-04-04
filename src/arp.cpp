@@ -2,12 +2,12 @@
 
 #include <cstring>
 
-#include "../include/ethernet.h"
-#include "../include/ip.h"
-#include "../include/log.h"
-#include "../include/my_buf.h"
-#include "../include/net.h"
-#include "../include/utils.h"
+#include "ethernet.h"
+#include "ip.h"
+#include "log.h"
+#include "my_buf.h"
+#include "net.h"
+#include "utils.h"
 
 arp_table_entry arp_table[ARP_TABLE_SIZE];
 

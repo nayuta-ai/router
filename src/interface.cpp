@@ -1,12 +1,12 @@
-#include "../include/interface.h"
+#include "interface.h"
 
 #include <net/if.h>
 
 #include <cstring>
 
-#include "../include/config.h"
-#include "../include/ip.h"
-#include "../include/net.h"
+#include "config.h"
+#include "ip.h"
+#include "net.h"
 
 /**
  * Return whether the device to ignore

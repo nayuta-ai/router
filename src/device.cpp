@@ -1,11 +1,12 @@
-#include "../include/device.h"
+#include "device.h"
 
 #include <sys/socket.h>
 
 #include <iostream>
 
-#include "../include/ethernet.h"
-#include "../include/net.h"
+#include "ethernet.h"
+#include "ip.h"
+#include "net.h"
 
 /**
  * Transmission process for net devices
@@ -40,3 +41,17 @@ int net_device_poll(net_device *dev) {
   ethernet_input(dev, recv_buffer, n);
   return 0;
 }
+
+// net_device *create_device(char *name,
+//                           int (*transmit)(net_device *dev, uint8_t *buffer,
+//                                           size_t len),
+//                           uint8_t *macaddr, uint32_t address) {
+//   auto *dev =
+//       (net_device *)calloc(1, sizeof(net_device) + sizeof(net_device_data));
+//   strcpy(dev->name, name);
+//   dev->ops.transmit = transmit;
+//   memcpy(dev->mac_addr, macaddr, 6);
+//   ip_device *ip_dev;
+//   ip_dev->address = address;
+//   return dev;
+// }

@@ -7,11 +7,6 @@
 #include "net.h"
 
 int mock_device_transmit(net_device *dev, uint8_t *buffer, size_t len) {
-  // if (len == ETHER_TYPE_IP) {
-  //   LOG_ETHERNET("Sent IP frame.");
-  // } else if (len == ETHER_TYPE_ARP) {
-  //   LOG_ETHERNET("Sent ARP frame.");
-  // }
   LOG_ETHERNET("Mock Device Transmit\n");
   return 0;
 }
@@ -22,7 +17,7 @@ TEST(EthernetEncapsulateTest, MockTest) {
   dev->ops.transmit = mock_device_transmit;
   uint8_t source_addr[6] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
   memcpy(dev->mac_addr, source_addr, 6);
-  my_buf *payload = my_buf::create(sizeof(uint8_t));
+  my_buf *payload = my_buf::create(0);
   uint8_t dest_addr[6] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
 
   testing::internal::CaptureStdout();

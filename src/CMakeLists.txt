@@ -14,4 +14,4 @@ add_library(net STATIC
   ethernet.cpp
 )
 
-target_include_directories(net INTERFACE ../include)
+# target_include_directories(net INTERFACE ../include)

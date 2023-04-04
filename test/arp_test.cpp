@@ -199,3 +199,23 @@ TEST_F(MockArpTest, Request) {
   EXPECT_EQ(ntohl(source_addr), arp->ip_addr);
   EXPECT_EQ(0, memcmp(arp->mac_addr, sha, 6));
 }
+
+TEST_F(MockArpTest, Send) {
+  auto *dev =
+      (net_device *)calloc(1, sizeof(net_device) + sizeof(net_device_data));
+  uint8_t mac_addr[] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
+  strcpy(dev->name, "dev");
+  memcpy(dev->mac_addr, mac_addr, 6);
+  ip_device ip_dev = {0x0302010a, 0, 0};
+  dev->ip_dev = &ip_dev;
+  uint32_t ip_addr = 0x0a000001;
+
+  // expect send function to be called with correct arguments
+  EXPECT_CALL(*mocketh, ethernet_encapsulate_output(_, _, _, _));
+
+  testing::internal::CaptureStdout();
+  send_arp_request(dev, ip_addr);
+  std::string output = testing::internal::GetCapturedStdout();
+
+  EXPECT_EQ("[ARP] Sending arp request via dev for 10.0.0.1\n", output);
+}
