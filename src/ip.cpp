@@ -66,7 +66,6 @@ void ip_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
 
   LOG_IP("Received IP packet type %d from %s to %s\n", ip_packet->protocol,
          ip_ntoa(ip_packet->src_addr), ip_ntoa(ip_packet->dest_addr));
-
   if (ip_packet->version != 4) {
     LOG_IP("Incorrect IP version\n");
     return;
@@ -88,7 +87,6 @@ void ip_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
 
   // Find out if the router has the destination IP address.
   for (net_device *dev = net_dev_list; dev; dev = dev->next) {
-    printf("%d", dev->ip_dev->address);
     if (dev->ip_dev != nullptr and
         dev->ip_dev->address != IP_ADDRESS(0, 0, 0, 0)) {
       // Processing when the destination IP address is an IP address owned by
