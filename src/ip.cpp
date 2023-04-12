@@ -1,12 +1,17 @@
 #include "ip.h"
 
 #include "arp.h"
+#include "binary_trie.h"
 #include "ethernet.h"
 #include "icmp.h"
 #include "log.h"
 #include "my_buf.h"
-#include "net.h"
 #include "utils.h"
+
+/**
+ * Root node of IP routing table
+ */
+binary_trie_node<ip_route_entry> *ip_fib;
 
 /**
  * Compare if the subnet contains IP addresses
@@ -104,6 +109,130 @@ void ip_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
             len);  // Treated as a communication addressed to you
       }
     }
+  }
+  // forwarding if the destination IP address is not an IP address that the
+  // router has
+  ip_route_entry *route = binary_trie_search(
+      ip_fib, ntohl(ip_packet->dest_addr));  // look up routing table
+  if (route ==
+      nullptr) {  // discard the packet if there is no route to the destination
+    LOG_IP("No route to %s\n", ip_htoa(ntohl(ip_packet->dest_addr)));
+    // Drop packet
+    return;
+  }
+
+  if (ip_packet->ttl <= 1) {  // drop if TTL is less than 1
+    send_icmp_time_exceeded(
+        ntohl(ip_packet->src_addr), input_dev->ip_dev->address,
+        ICMP_TIME_EXCEEDED_CODE_TIME_TO_LIVE_EXCEEDED, buffer, len);
+    return;
+  }
+
+  // set TTL to 1
+  ip_packet->ttl--;
+
+  // recalculate IP header checksum
+  ip_packet->header_checksum = 0;
+  ip_packet->header_checksum =
+      checksum_16(reinterpret_cast<uint16_t *>(buffer), sizeof(ip_header));
+
+  // copy to my_buf structure
+  my_buf *ip_fwd_mybuf = my_buf::create(len);
+  memcpy(ip_fwd_mybuf->buffer, buffer, len);
+  ip_fwd_mybuf->len = len;
+
+  if (route->type == connected) {  // if it is a direct connection network route
+    ip_output_to_host(route->dev, ntohl(ip_packet->dest_addr),
+                      ntohl(ip_packet->src_addr),
+                      ip_fwd_mybuf);  // send directly to host
+    return;
+
+  } else if (route->type ==
+             network) {  // if not a direct connection network route
+    ip_output_to_next_hop(route->next_hop, ip_fwd_mybuf);  // send to next hop
+    return;
+  }
+}
+
+/**
+ * Send IP packets directly to host via Ethernet
+ * @param dev
+ * @param dest_addr
+ * @param src_addr
+ * @param buffer
+ */
+void ip_output_to_host(net_device *dev, uint32_t dest_addr, uint32_t src_addr,
+                       my_buf *buffer) {
+  arp_table_entry *entry =
+      search_arp_table_entry(dest_addr);  // search ARP table
+
+  if (!entry) {  // if there is no ARP entry
+    LOG_IP("Trying ip output to host, but no arp record to %s\n",
+           ip_htoa(dest_addr));
+    send_arp_request(dev, dest_addr);   // send ARP request
+    my_buf::my_buf_free(buffer, true);  // Drop packet
+    return;
+  } else {
+    ethernet_encapsulate_output(
+        entry->dev, entry->mac_addr, buffer,
+        ETHER_TYPE_IP);  // encapsulate and send over Ethernet
+  }
+}
+
+/**
+ * Send IP packets to NextHop
+ * @param next_hop
+ * @param buffer
+ */
+void ip_output_to_next_hop(uint32_t next_hop, my_buf *buffer) {
+  arp_table_entry *entry =
+      search_arp_table_entry(next_hop);  // search ARP table
+
+  if (!entry) {  // if there is no ARP entry
+    LOG_IP("Trying ip output to next hop, but no arp record to %s\n",
+           ip_htoa(next_hop));
+
+    ip_route_entry *route_to_next_hop =
+        binary_trie_search(ip_fib, next_hop);  // look up routing table
+
+    if (route_to_next_hop == nullptr or
+        route_to_next_hop->type != connected) {  // if next hop is not reachable
+      LOG_IP("Next hop %s is not reachable\n", ip_htoa(next_hop));
+    } else {
+      send_arp_request(route_to_next_hop->dev, next_hop);  // send ARP request
+    }
+    my_buf::my_buf_free(buffer, true);  // Drop packet
+    return;
+
+  } else {  // if there is an ARP entry and the MAC address is obtained
+    ethernet_encapsulate_output(
+        entry->dev, entry->mac_addr, buffer,
+        ETHER_TYPE_IP);  // encapsulate with Ethernet and send
+  }
+}
+
+/**
+ * Send IP packets.
+ * @param dest_addr
+ * @param src_addr
+ * @param buffer
+ */
+void ip_output(uint32_t dest_addr, uint32_t src_addr, my_buf *buffer) {
+  // Find a route to the destination IP address
+  ip_route_entry *route = binary_trie_search(ip_fib, dest_addr);
+  if (route == nullptr) {  // if no route is found
+    LOG_IP("No route to %s\n", ip_htoa(dest_addr));
+    my_buf::my_buf_free(buffer, true);  // Drop packet
+    return;
+  }
+
+  if (route->type == connected) {  // if it is a directly connected network
+    ip_output_to_host(route->dev, dest_addr, src_addr, buffer);
+    return;
+  } else if (route->type ==
+             network) {  // if it is not directly connected network
+    ip_output_to_next_hop(route->next_hop, buffer);
+    return;
   }
 }
 

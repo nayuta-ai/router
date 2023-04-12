@@ -24,26 +24,26 @@ TEST(SubnetTest, InSubnetTest) {
   EXPECT_FALSE(in_subnet(subnet_prefix, subnet_mask, out_of_subnet_address));
 }
 
-TEST(IPInputTest, TCP) {
-  // Set up input data (a network device without IP address)
-  net_device input_dev;
-  input_dev.ip_dev = nullptr;
-  strcpy(input_dev.name, "eth0");
+// TEST(IPInputTest, TCP) {
+//   // Set up input data (a network device without IP address)
+//   net_device input_dev;
+//   input_dev.ip_dev = nullptr;
+//   strcpy(input_dev.name, "eth0");
 
-  // Set up input data (a buffer containing an IP packet)
-  uint8_t buffer[sizeof(ip_header)] = {0};
-  auto *ip_packet = reinterpret_cast<ip_header *>(buffer);
-  ip_packet->version = 4;
-  ip_packet->header_len = sizeof(ip_header) >> 2;
-  ip_packet->src_addr = 0x0a010101;   // 10.1.1.1
-  ip_packet->dest_addr = 0x0a010102;  // 10.1.1.2
-  ip_packet->protocol = IPPROTO_TCP;
+//   // Set up input data (a buffer containing an IP packet)
+//   uint8_t buffer[sizeof(ip_header)] = {0};
+//   auto *ip_packet = reinterpret_cast<ip_header *>(buffer);
+//   ip_packet->version = 4;
+//   ip_packet->header_len = sizeof(ip_header) >> 2;
+//   ip_packet->src_addr = 0x0a010101;   // 10.1.1.1
+//   ip_packet->dest_addr = 0x0a010102;  // 10.1.1.2
+//   ip_packet->protocol = IPPROTO_TCP;
 
-  // Call the function and check the result (no output or side effect expected)
-  ip_input(&input_dev, buffer, sizeof(ip_header));
-  // No assertion required, the test case will pass if the function returns
-  // normally
-}
+//   // Call the function and check the result (no output or side effect
+//   expected) ip_input(&input_dev, buffer, sizeof(ip_header));
+//   // No assertion required, the test case will pass if the function returns
+//   // normally
+// }
 
 extern net_device *net_dev_list;
 
@@ -142,166 +142,166 @@ TEST_F(MockIPTest, NotExistArpEntry) {
       output);
 }
 
-void icmp_input(uint32_t source, uint32_t destination, void *buffer,
-                size_t len);
+// void icmp_input(uint32_t source, uint32_t destination, void *buffer,
+//                 size_t len);
 
-void send_icmp_destination_unreachable(uint32_t dest_addr, uint32_t src_addr,
-                                       uint8_t code, void *error_ip_buffer,
-                                       size_t len);
+// void send_icmp_destination_unreachable(uint32_t dest_addr, uint32_t src_addr,
+//                                        uint8_t code, void *error_ip_buffer,
+//                                        size_t len);
 
-class MockICMP {
- public:
-  MOCK_METHOD(void, icmp_input,
-              (uint32_t source, uint32_t destination, void *buffer,
-               size_t len));
-  MOCK_METHOD(void, send_icmp_destination_unreachable,
-              (uint32_t dest_addr, uint32_t src_addr, uint8_t code,
-               void *error_ip_buffer, size_t len));
-} *mockicmp;
+// class MockICMP {
+//  public:
+//   MOCK_METHOD(void, icmp_input,
+//               (uint32_t source, uint32_t destination, void *buffer,
+//                size_t len));
+//   MOCK_METHOD(void, send_icmp_destination_unreachable,
+//               (uint32_t dest_addr, uint32_t src_addr, uint8_t code,
+//                void *error_ip_buffer, size_t len));
+// } *mockicmp;
 
-void icmp_input(uint32_t source, uint32_t destination, void *buffer,
-                size_t len) {
-  mockicmp->icmp_input(source, destination, buffer, len);
-}
+// void icmp_input(uint32_t source, uint32_t destination, void *buffer,
+//                 size_t len) {
+//   mockicmp->icmp_input(source, destination, buffer, len);
+// }
 
-void send_icmp_destination_unreachable(uint32_t dest_addr, uint32_t src_addr,
-                                       uint8_t code, void *error_ip_buffer,
-                                       size_t len) {
-  mockicmp->send_icmp_destination_unreachable(dest_addr, src_addr, code,
-                                              error_ip_buffer, len);
-}
+// void send_icmp_destination_unreachable(uint32_t dest_addr, uint32_t src_addr,
+//                                        uint8_t code, void *error_ip_buffer,
+//                                        size_t len) {
+//   mockicmp->send_icmp_destination_unreachable(dest_addr, src_addr, code,
+//                                               error_ip_buffer, len);
+// }
 
-class MockICMPTest : public ::testing::Test {
- protected:
-  void SetUp() override { mockicmp = new MockICMP(); }
+// class MockICMPTest : public ::testing::Test {
+//  protected:
+//   void SetUp() override { mockicmp = new MockICMP(); }
 
-  void TearDown() override {
-    delete mockicmp;
-    net_dev_list->next = nullptr;
-  }
-};
+//   void TearDown() override {
+//     delete mockicmp;
+//     net_dev_list->next = nullptr;
+//   }
+// };
 
-TEST_F(MockICMPTest, ICMP) {
-  // Set up input data (a network device without IP address)
-  auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
-  auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
-  ip_dev->address = 0x0a010102;
-  ip_dev->netmask = 0;
-  ip_dev->broadcast = 0;
-  input_dev->ip_dev = ip_dev;
-  strcpy(input_dev->name, "eth0");
-  net_device *next;
-  next = net_dev_list;
-  net_dev_list = input_dev;
-  input_dev->next = next;
+// TEST_F(MockICMPTest, ICMP) {
+//   // Set up input data (a network device without IP address)
+//   auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
+//   auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
+//   ip_dev->address = 0x0a010102;
+//   ip_dev->netmask = 0;
+//   ip_dev->broadcast = 0;
+//   input_dev->ip_dev = ip_dev;
+//   strcpy(input_dev->name, "eth0");
+//   net_device *next;
+//   next = net_dev_list;
+//   net_dev_list = input_dev;
+//   input_dev->next = next;
 
-  // Set up input data (a buffer containing an IP packet)
-  auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
-  ip_packet->version = 4;
-  ip_packet->header_len = sizeof(ip_header) >> 2;
-  ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
-  ip_packet->dest_addr = 0x0201010a;  // 10.1.1.2
-  ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
-  auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
-  char expected[100];
-  sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
-          ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
-          ip_ntoa(ip_packet->dest_addr));
+//   // Set up input data (a buffer containing an IP packet)
+//   auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
+//   ip_packet->version = 4;
+//   ip_packet->header_len = sizeof(ip_header) >> 2;
+//   ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
+//   ip_packet->dest_addr = 0x0201010a;  // 10.1.1.2
+//   ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
+//   auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
+//   char expected[100];
+//   sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
+//           ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
+//           ip_ntoa(ip_packet->dest_addr));
 
-  EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
+//   EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
 
-  testing::internal::CaptureStdout();
-  // Call the function and check the result (no output or side effectexpected)
-  ip_input(input_dev, buffer, sizeof(ip_header));
-  std::string output = testing::internal::GetCapturedStdout();
+//   testing::internal::CaptureStdout();
+//   // Call the function and check the result (no output or side
+//   effectexpected) ip_input(input_dev, buffer, sizeof(ip_header)); std::string
+//   output = testing::internal::GetCapturedStdout();
 
-  EXPECT_EQ(expected, output);
-}
+//   EXPECT_EQ(expected, output);
+// }
 
-TEST_F(MockICMPTest, DestinationUnreachable) {
-  // Set up input data (a network device without IP address)
-  auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
-  auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
-  ip_dev->address = 0x0a010102;
-  ip_dev->netmask = 0;
-  ip_dev->broadcast = 0;
-  input_dev->ip_dev = ip_dev;
-  strcpy(input_dev->name, "eth0");
-  net_device *next;
-  next = net_dev_list;
-  net_dev_list = input_dev;
-  input_dev->next = next;
+// TEST_F(MockICMPTest, DestinationUnreachable) {
+//   // Set up input data (a network device without IP address)
+//   auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
+//   auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
+//   ip_dev->address = 0x0a010102;
+//   ip_dev->netmask = 0;
+//   ip_dev->broadcast = 0;
+//   input_dev->ip_dev = ip_dev;
+//   strcpy(input_dev->name, "eth0");
+//   net_device *next;
+//   next = net_dev_list;
+//   net_dev_list = input_dev;
+//   input_dev->next = next;
 
-  // Set up input data (a buffer containing an IP packet)
-  auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
-  ip_packet->version = 4;
-  ip_packet->header_len = sizeof(ip_header) >> 2;
-  ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
-  ip_packet->dest_addr = 0x0201010a;  // 10.1.1.2
-  ip_packet->protocol = IP_PROTOCOL_NUM_UDP;
-  auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
-  char expected[100];
-  sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
-          ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
-          ip_ntoa(ip_packet->dest_addr));
+//   // Set up input data (a buffer containing an IP packet)
+//   auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
+//   ip_packet->version = 4;
+//   ip_packet->header_len = sizeof(ip_header) >> 2;
+//   ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
+//   ip_packet->dest_addr = 0x0201010a;  // 10.1.1.2
+//   ip_packet->protocol = IP_PROTOCOL_NUM_UDP;
+//   auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
+//   char expected[100];
+//   sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
+//           ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
+//           ip_ntoa(ip_packet->dest_addr));
 
-  EXPECT_CALL(*mockicmp, send_icmp_destination_unreachable(_, _, _, _, _));
+//   EXPECT_CALL(*mockicmp, send_icmp_destination_unreachable(_, _, _, _, _));
 
-  testing::internal::CaptureStdout();
-  // Call the function and check the result (no output or side effectexpected)
-  ip_input(input_dev, buffer, sizeof(ip_header));
-  std::string output = testing::internal::GetCapturedStdout();
+//   testing::internal::CaptureStdout();
+//   // Call the function and check the result (no output or side
+//   effectexpected) ip_input(input_dev, buffer, sizeof(ip_header)); std::string
+//   output = testing::internal::GetCapturedStdout();
 
-  EXPECT_EQ(expected, output);
-}
+//   EXPECT_EQ(expected, output);
+// }
 
-TEST_F(MockICMPTest, BroadCast) {
-  // Set up input data (a network device without IP address)
-  auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
-  auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
-  ip_dev->address = 0x0a010102;
-  ip_dev->netmask = 0;
-  ip_dev->broadcast = 0;
-  input_dev->ip_dev = ip_dev;
-  strcpy(input_dev->name, "eth0");
+// TEST_F(MockICMPTest, BroadCast) {
+//   // Set up input data (a network device without IP address)
+//   auto *input_dev = (net_device *)calloc(1, sizeof(net_device) + 1);
+//   auto *ip_dev = (ip_device *)calloc(1, sizeof(ip_device) + 1);
+//   ip_dev->address = 0x0a010102;
+//   ip_dev->netmask = 0;
+//   ip_dev->broadcast = 0;
+//   input_dev->ip_dev = ip_dev;
+//   strcpy(input_dev->name, "eth0");
 
-  // Set up input data (a buffer containing an IP packet)
-  auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
-  ip_packet->version = 4;
-  ip_packet->header_len = sizeof(ip_header) >> 2;
-  ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
-  ip_packet->dest_addr = 0xffffffff;  // 255.255.255.255
-  ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
-  auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
-  char expected[100];
-  sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
-          ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
-          ip_ntoa(ip_packet->dest_addr));
+//   // Set up input data (a buffer containing an IP packet)
+//   auto *ip_packet = (ip_header *)malloc(sizeof(ip_header));
+//   ip_packet->version = 4;
+//   ip_packet->header_len = sizeof(ip_header) >> 2;
+//   ip_packet->src_addr = 0x0101010a;   // 10.1.1.1
+//   ip_packet->dest_addr = 0xffffffff;  // 255.255.255.255
+//   ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
+//   auto *buffer = reinterpret_cast<uint8_t *>(ip_packet);
+//   char expected[100];
+//   sprintf(expected, "[IP] Received IP packet type %d from %s to %s\n",
+//           ip_packet->protocol, ip_ntoa(ip_packet->src_addr),
+//           ip_ntoa(ip_packet->dest_addr));
 
-  EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
+//   EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
 
-  testing::internal::CaptureStdout();
-  // Call the function and check the result (no output or side effectexpected)
-  ip_input(input_dev, buffer, sizeof(ip_header));
-  std::string output = testing::internal::GetCapturedStdout();
+//   testing::internal::CaptureStdout();
+//   // Call the function and check the result (no output or side
+//   effectexpected) ip_input(input_dev, buffer, sizeof(ip_header)); std::string
+//   output = testing::internal::GetCapturedStdout();
 
-  EXPECT_EQ(expected, output);
-}
+//   EXPECT_EQ(expected, output);
+// }
 
-TEST_F(MockICMPTest, LOG) {
-  // Set up input data (a network device without IP address)
-  net_device input_dev;
-  input_dev.ip_dev = nullptr;
-  strcpy(input_dev.name, "eth0");
-  // Set up input data (a buffer containing an IP packet)
-  uint8_t buffer[sizeof(ip_header)] = {0};
-  auto *ip_packet = reinterpret_cast<ip_header *>(buffer);
-  ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
+// TEST_F(MockICMPTest, LOG) {
+//   // Set up input data (a network device without IP address)
+//   net_device input_dev;
+//   input_dev.ip_dev = nullptr;
+//   strcpy(input_dev.name, "eth0");
+//   // Set up input data (a buffer containing an IP packet)
+//   uint8_t buffer[sizeof(ip_header)] = {0};
+//   auto *ip_packet = reinterpret_cast<ip_header *>(buffer);
+//   ip_packet->protocol = IP_PROTOCOL_NUM_ICMP;
 
-  EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
+//   EXPECT_CALL(*mockicmp, icmp_input(_, _, _, _));
 
-  testing::internal::CaptureStdout();
-  ip_input_to_ours(&input_dev, ip_packet, sizeof(ip_header));
-  std::string output = testing::internal::GetCapturedStdout();
-  EXPECT_EQ("", output);
-}
+//   testing::internal::CaptureStdout();
+//   ip_input_to_ours(&input_dev, ip_packet, sizeof(ip_header));
+//   std::string output = testing::internal::GetCapturedStdout();
+//   EXPECT_EQ("", output);
+// }

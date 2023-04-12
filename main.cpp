@@ -13,8 +13,10 @@
 #include <iostream>
 
 #include "arp.h"
+#include "binary_trie.h"
 #include "device.h"
 #include "interface.h"
+#include "ip.h"
 #include "log.h"
 #include "net.h"
 
@@ -109,6 +111,10 @@ int main() {
     LOG_ERROR("No interface is enabled!\n");
     exit(EXIT_FAILURE);
   }
+
+  // Create root node of IP routing table tree structure
+  ip_fib = (binary_trie_node<ip_route_entry> *)calloc(
+      1, sizeof(binary_trie_node<ip_route_entry>));
 
   // Input network settings
   configure();
