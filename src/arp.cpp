@@ -31,6 +31,8 @@ void add_arp_table_entry(net_device *dev, uint8_t *mac_addr, uint32_t ip_addr) {
     memcpy(candidate->mac_addr, mac_addr, 6);
     candidate->ip_addr = ip_addr;
     candidate->dev = dev;
+    LOG_ARP("Add arp table entry: ip_addr=%s, mac_addr=%s\n", ip_htoa(ip_addr),
+            mac_addr_toa(mac_addr));
     return;
   }
 
@@ -172,10 +174,12 @@ void arp_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
       if (op == ARP_OPERATION_CODE_REQUEST) {
         // Receipt of ARP request
         arp_request_arrives(input_dev, arp_msg);
+        dump_arp_table_entry();
         return;
       } else if (op == ARP_OPERATION_CODE_REPLY) {
         // Receipt of ARP reply
         arp_reply_arrives(input_dev, arp_msg);
+        dump_arp_table_entry();
         return;
       }
       break;

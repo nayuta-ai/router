@@ -6,6 +6,7 @@
 #include "icmp.h"
 #include "log.h"
 #include "my_buf.h"
+#include "nat.h"
 #include "utils.h"
 
 /**
@@ -32,20 +33,57 @@ bool in_subnet(uint32_t subnet_prefix, uint32_t subnet_mask,
  * @param len
  */
 void ip_input_to_ours(net_device *input_dev, ip_header *ip_packet, size_t len) {
+  // Determine if communication is from outside NAT to inside NAT
+  for (net_device *dev = net_dev_list; dev; dev = dev->next) {
+    if (dev->ip_dev != nullptr and dev->ip_dev->nat_dev != nullptr and
+        dev->ip_dev->nat_dev->outside_addr == ntohl(ip_packet->dest_addr)) {
+      bool nat_executed = false;
+      switch (ip_packet->protocol) {
+        case IP_PROTOCOL_NUM_UDP:
+          if (nat_exec(ip_packet, len, dev->ip_dev->nat_dev, nat_protocol::udp,
+                       nat_direction::incoming)) {
+            nat_executed = true;
+          }
+          break;
+        case IP_PROTOCOL_NUM_TCP:
+          if (nat_exec(ip_packet, len, dev->ip_dev->nat_dev, nat_protocol::tcp,
+                       nat_direction::incoming)) {
+            nat_executed = true;
+          }
+          break;
+        case IP_PROTOCOL_NUM_ICMP:
+          if (nat_exec(ip_packet, len, dev->ip_dev->nat_dev, nat_protocol::icmp,
+                       nat_direction::incoming)) {
+            nat_executed = true;
+          }
+          break;
+      }
+      if (nat_executed) {
+        my_buf *nat_fwd_mybuf = my_buf::create(len);
+        memcpy(nat_fwd_mybuf->buffer, ip_packet, len);
+        nat_fwd_mybuf->len = len;
+        ip_output(ntohl(ip_packet->dest_addr), ntohl(ip_packet->src_addr),
+                  nat_fwd_mybuf);
+        return;
+      }
+    }
+  }
+  LOG_IP("Transition to upper protocol processing");
   // Transition to upper protocol processing
   switch (ip_packet->protocol) {
     case IP_PROTOCOL_NUM_ICMP:
       return icmp_input(ntohl(ip_packet->src_addr), ntohl(ip_packet->dest_addr),
                         ((uint8_t *)ip_packet) + IP_HEADER_SIZE,
                         len - IP_HEADER_SIZE);
-
     case IP_PROTOCOL_NUM_UDP:
       send_icmp_destination_unreachable(
           ntohl(ip_packet->src_addr), input_dev->ip_dev->address,
           ICMP_DESTINATION_UNREACHABLE_CODE_PORT_UNREACHABLE, ip_packet, len);
       return;
     case IP_PROTOCOL_NUM_TCP:
+      // まだこのルータにはTCPを扱う機能はない
       return;
+
     default:
 
       LOG_IP("Unhandled ip protocol %04x", ip_packet->protocol);
@@ -108,6 +146,28 @@ void ip_input(net_device *input_dev, uint8_t *buffer, ssize_t len) {
             dev, ip_packet,
             len);  // Treated as a communication addressed to you
       }
+    }
+  }
+  // Communication from inside NAT to outside NAT
+  if (input_dev->ip_dev->nat_dev != nullptr) {
+    if (ip_packet->protocol == IP_PROTOCOL_NUM_UDP) {
+      if (!nat_exec(ip_packet, len, input_dev->ip_dev->nat_dev,
+                    nat_protocol::udp, nat_direction::outgoing)) {
+        return;  // Drop packets that cannot be NATed
+      }
+    } else if (ip_packet->protocol == IP_PROTOCOL_NUM_TCP) {
+      if (!nat_exec(ip_packet, len, input_dev->ip_dev->nat_dev,
+                    nat_protocol::tcp, nat_direction::outgoing)) {
+        return;  // Drop packets that cannot be NATed
+      }
+    } else if (ip_packet->protocol == IP_PROTOCOL_NUM_ICMP) {
+      if (!nat_exec(ip_packet, len, input_dev->ip_dev->nat_dev,
+                    nat_protocol::icmp, nat_direction::outgoing)) {
+        return;  // Drop packets that cannot be NATed
+      }
+    } else {
+      LOG_IP("NAT unimplemented packet dropped type=%d\n", ip_packet->protocol);
+      return;  // Drop packets that cannot be NATed
     }
   }
   // forwarding if the destination IP address is not an IP address that the
