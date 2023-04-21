@@ -12,6 +12,7 @@ add_library(net STATIC
   icmp.cpp
   arp.cpp
   ethernet.cpp
+  nat.cpp
 )
 
 # target_include_directories(net INTERFACE ../include)

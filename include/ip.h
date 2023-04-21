@@ -28,10 +28,13 @@ struct ip_header {
   uint32_t dest_addr;
 } __attribute__((packed));
 
+struct nat_device;
+
 struct ip_device {
   uint32_t address = 0;    // IP address of the device
   uint32_t netmask = 0;    // Subnet Masks
   uint32_t broadcast = 0;  // Broadcast Addresses
+  nat_device *nat_dev = nullptr;
 };
 
 enum ip_route_type {

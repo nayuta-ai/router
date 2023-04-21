@@ -81,6 +81,7 @@ void icmp_input(uint32_t source, uint32_t destination, void *buffer,
  */
 void send_icmp_time_exceeded(uint32_t dest_addr, uint32_t src_addr,
                              uint8_t code, void *error_ip_buffer, size_t len) {
+  LOG_ICMP("ICMP time exceeded\n");
   if (len < sizeof(ip_header) + 8) {  // If error packet is too small
     return;
   }
@@ -119,6 +120,7 @@ void send_icmp_time_exceeded(uint32_t dest_addr, uint32_t src_addr,
 void send_icmp_destination_unreachable(uint32_t dest_addr, uint32_t src_addr,
                                        uint8_t code, void *error_ip_buffer,
                                        size_t len) {
+  LOG_ICMP("ICMP destination unreachable\n");
   if (len < sizeof(ip_header) + 8) {  // If error packet is too small
     LOG_ICMP("Error packet is too short\n");
     return;
